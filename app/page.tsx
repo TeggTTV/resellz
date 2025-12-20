@@ -1,6 +1,7 @@
 import Hero from '@/components/landing/Hero';
 import Features from '@/components/landing/Features';
 import Testimonials from '@/components/landing/Testimonials';
+import Pricing from '@/components/landing/Pricing';
 import ContactCTA from '@/components/landing/ContactCTA';
 
 export default function Home() {
@@ -9,6 +10,7 @@ export default function Home() {
 			<Hero />
 			<Features />
 			<Testimonials />
+			<Pricing />
 			<ContactCTA />
 		</main>
 	);
