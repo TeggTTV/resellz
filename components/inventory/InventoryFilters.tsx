@@ -40,7 +40,7 @@ export default function InventoryFilters({
 			<div className="flex gap-2">
 				{/* Filter Chips */}
 				<div className="flex bg-white/5 p-1 rounded-xl border border-white/10 h-full">
-					{['All', 'In Stock', 'Sold'].map((filter) => (
+					{['All', 'Available', 'Sold'].map((filter) => (
 						<button
 							key={filter}
 							onClick={() => setFilter(filter)}

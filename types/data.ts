@@ -3,6 +3,7 @@ export type ItemStatus = 'Available' | 'Sold' | 'Pending';
 export interface InventoryItemVariant {
 	size: string;
 	quantity: number;
+	binLocation?: string;
 	marketPrice?: number; // Optional override for specific variant pricing
 	purchasePrice?: number; // Optional override for specific variant cost
 }
@@ -13,6 +14,7 @@ export interface InventoryItem {
 	sku: string;
 	brand: string;
 	size: string;
+	binLocation?: string;
 	purchasePrice: number;
 	marketPrice: number;
 	status: ItemStatus;

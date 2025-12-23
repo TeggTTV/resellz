@@ -11,12 +11,14 @@ interface AddItemModalProps {
 	isOpen: boolean;
 	onClose: () => void;
 	itemToEdit?: InventoryItem | null; // Optional item for editing mode
+	isDuplicate?: boolean;
 }
 
 export default function AddItemModal({
 	isOpen,
 	onClose,
 	itemToEdit,
+	isDuplicate = false,
 }: AddItemModalProps) {
 	const { addItem, updateItem } = useData();
 	const [formData, setFormData] = useState({
@@ -28,6 +30,7 @@ export default function AddItemModal({
 		marketPrice: '',
 		notes: '',
 		quantity: '1',
+		binLocation: '',
 	});
 	const [image, setImage] = useState<string>('');
 
@@ -47,31 +50,28 @@ export default function AddItemModal({
 		if (isOpen) {
 			// biome-ignore lint/correctness/useExhaustiveDependencies: Reset form on open
 			if (itemToEdit) {
-				// Only update if editing different item
-				if (
-					formData.sku !== itemToEdit.sku ||
-					formData.name !== itemToEdit.name
-				) {
-					setFormData({
-						name: itemToEdit.name || '',
-						brand: itemToEdit.brand,
-						sku: itemToEdit.sku,
-						size: itemToEdit.size,
-						purchasePrice: itemToEdit.purchasePrice.toString(),
-						marketPrice: itemToEdit.marketPrice.toString(),
-						notes: itemToEdit.notes || '',
-						quantity: itemToEdit.quantity.toString(),
-					});
-					setImage(itemToEdit.imageUrl || '');
+				// Only update if editing different item or forced refresh
+				// For duplication, we always want to repopulate
+				setFormData({
+					name: itemToEdit.name || '',
+					brand: itemToEdit.brand,
+					sku: itemToEdit.sku,
+					size: itemToEdit.size,
+					purchasePrice: itemToEdit.purchasePrice.toString(),
+					marketPrice: itemToEdit.marketPrice.toString(),
+					notes: itemToEdit.notes || '',
+					quantity: itemToEdit.quantity.toString(),
+					binLocation: itemToEdit.binLocation || '',
+				});
+				setImage(itemToEdit.imageUrl || '');
 
-					// Initialize variants if existing
-					if (itemToEdit.variants && itemToEdit.variants.length > 0) {
-						setVariants(itemToEdit.variants);
-						setUseVariants(true);
-					} else {
-						setVariants([]);
-						setUseVariants(false);
-					}
+				// Initialize variants if existing
+				if (itemToEdit.variants && itemToEdit.variants.length > 0) {
+					setVariants(itemToEdit.variants);
+					setUseVariants(true);
+				} else {
+					setVariants([]);
+					setUseVariants(false);
 				}
 			} else {
 				// Reset for add mode
@@ -84,6 +84,7 @@ export default function AddItemModal({
 					marketPrice: '',
 					notes: '',
 					quantity: '1',
+					binLocation: '',
 				});
 				setImage('');
 				setVariants([]);
@@ -237,15 +238,16 @@ export default function AddItemModal({
 			image: image,
 			imageUrl: image,
 			variants: finalVariants,
+			binLocation: formData.binLocation,
 		};
 
-		if (itemToEdit) {
+		if (itemToEdit && !isDuplicate) {
 			// If restocking (adding quantity), ensure status is Available
 			const statusUpdate =
 				finalQuantity > 0 ? { status: 'Available' as const } : {};
 			updateItem(itemToEdit.id, { ...baseData, ...statusUpdate });
 		} else {
-			// New items always start with 0 sold
+			// New items (or duplicates) always start with 0 sold
 			addItem({ ...baseData, soldQuantity: 0 });
 		}
 
@@ -274,7 +276,11 @@ export default function AddItemModal({
 					>
 						<div className="flex justify-between items-center mb-6">
 							<h2 className="text-2xl font-bold text-white">
-								{itemToEdit ? 'Edit Item' : 'Add New Item'}
+								{isDuplicate
+									? 'Duplicate Item'
+									: itemToEdit
+									? 'Edit Item'
+									: 'Add New Item'}
 							</h2>
 							<button
 								onClick={onClose}
@@ -411,6 +417,24 @@ export default function AddItemModal({
 										className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-hidden focus:border-primary/50 transition-colors"
 									/>
 								</div>
+							</div>
+
+							<div>
+								<label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+									Bin / Location
+								</label>
+								<input
+									type="text"
+									placeholder="e.g. A-3, Shelf 2, Box 1"
+									value={formData.binLocation}
+									onChange={(e) =>
+										setFormData({
+											...formData,
+											binLocation: e.target.value,
+										})
+									}
+									className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-hidden focus:border-primary/50 transition-colors"
+								/>
 							</div>
 
 							{/* Size and Quantity Section */}
@@ -655,7 +679,7 @@ export default function AddItemModal({
 									type="submit"
 									className="w-full bg-primary hover:bg-primary-hover text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
 								>
-									{itemToEdit ? (
+									{itemToEdit && !isDuplicate ? (
 										<>
 											<Save size={20} />
 											Save Changes

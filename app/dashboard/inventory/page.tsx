@@ -18,6 +18,7 @@ export default function InventoryPage() {
 	const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 	const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
 	const [sellingItem, setSellingItem] = useState<InventoryItem | null>(null);
+	const [isDuplicateMode, setIsDuplicateMode] = useState(false);
 
 	// Filter State
 	const [searchQuery, setSearchQuery] = useState('');
@@ -41,12 +42,20 @@ export default function InventoryPage() {
 
 	const handleEdit = (item: InventoryItem) => {
 		setEditingItem(item);
+		setIsDuplicateMode(false);
+		setIsAddModalOpen(true);
+	};
+
+	const handleDuplicate = (item: InventoryItem) => {
+		setEditingItem(item);
+		setIsDuplicateMode(true);
 		setIsAddModalOpen(true);
 	};
 
 	const handleCloseAddModal = () => {
 		setIsAddModalOpen(false);
 		setEditingItem(null);
+		setIsDuplicateMode(false);
 	};
 
 	return (
@@ -100,6 +109,7 @@ export default function InventoryPage() {
 				isOpen={isAddModalOpen}
 				onClose={handleCloseAddModal}
 				itemToEdit={editingItem}
+				isDuplicate={isDuplicateMode}
 			/>
 
 			<ShareInventoryModal
@@ -152,6 +162,8 @@ export default function InventoryPage() {
 								onEdit={handleEdit}
 								onSell={setSellingItem}
 								onDelete={deleteItem}
+								onDuplicate={handleDuplicate}
+								viewMode={viewMode}
 							/>
 						</motion.div>
 					))}
