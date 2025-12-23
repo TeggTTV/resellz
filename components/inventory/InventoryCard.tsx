@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MoreHorizontal, Tag, Pencil, DollarSign, Trash2 } from 'lucide-react';
+import Image from 'next/image';
 import { InventoryItem } from '@/types/data';
 import { span } from 'framer-motion/client';
 
@@ -96,14 +97,19 @@ export default function InventoryCard({
 			</div>
 
 			{/* Image Area */}
-			<div
-				className={`h-40 w-full ${
-					item.imageUrl || 'bg-white/5'
-				} flex items-center justify-center relative`}
-			>
-				{/* Placeholder for actual image */}
-				<Tag className="text-white/20 w-16 h-16" />
-				<div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/80 to-transparent" />
+			<div className="h-40 w-full bg-white/5 flex items-center justify-center relative">
+				{item.imageUrl ? (
+					<Image
+						src={item.imageUrl}
+						alt={item.name}
+						fill
+						className="object-cover transition-transform duration-300 group-hover:scale-105"
+						unoptimized
+					/>
+				) : (
+					<Tag className="text-white/20 w-16 h-16" />
+				)}
+				<div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
 			</div>
 
 			{/* Content */}
