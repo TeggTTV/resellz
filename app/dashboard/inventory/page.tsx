@@ -2,18 +2,20 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus } from 'lucide-react';
+import { Plus, Share2 } from 'lucide-react';
 import InventoryStats from '@/components/inventory/InventoryStats';
 import InventoryFilters from '@/components/inventory/InventoryFilters';
 import InventoryCard from '@/components/inventory/InventoryCard';
 import AddItemModal from '@/components/inventory/AddItemModal';
 import SellItemModal from '@/components/inventory/SellItemModal';
+import ShareInventoryModal from '@/components/inventory/ShareInventoryModal';
 import { useData } from '@/context/DataContext';
 import { InventoryItem } from '@/types/data';
 
 export default function InventoryPage() {
 	const { items, deleteItem } = useData();
 	const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+	const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 	const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
 	const [sellingItem, setSellingItem] = useState<InventoryItem | null>(null);
 
@@ -68,23 +70,41 @@ export default function InventoryPage() {
 						Manage your stock, track profits, and organize listings.
 					</motion.p>
 				</div>
-				<motion.button
-					onClick={() => setIsAddModalOpen(true)}
-					initial={{ opacity: 0, scale: 0.9 }}
-					animate={{ opacity: 1, scale: 1 }}
-					whileHover={{ scale: 1 }}
-					whileTap={{ scale: 0.95 }}
-					className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all"
-				>
-					<Plus size={20} />
-					<span>Add New Item</span>
-				</motion.button>
+				<div className="flex items-center gap-3">
+					<motion.button
+						onClick={() => setIsShareModalOpen(true)}
+						initial={{ opacity: 0, scale: 0.9 }}
+						animate={{ opacity: 1, scale: 1 }}
+						whileHover={{ scale: 1 }}
+						whileTap={{ scale: 0.95 }}
+						className="flex items-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold border border-white/10 transition-all"
+					>
+						<Share2 size={20} />
+						<span>Share</span>
+					</motion.button>
+					<motion.button
+						onClick={() => setIsAddModalOpen(true)}
+						initial={{ opacity: 0, scale: 0.9 }}
+						animate={{ opacity: 1, scale: 1 }}
+						whileHover={{ scale: 1 }}
+						whileTap={{ scale: 0.95 }}
+						className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all"
+					>
+						<Plus size={20} />
+						<span>Add New Item</span>
+					</motion.button>
+				</div>
 			</div>
 
 			<AddItemModal
 				isOpen={isAddModalOpen}
 				onClose={handleCloseAddModal}
 				itemToEdit={editingItem}
+			/>
+
+			<ShareInventoryModal
+				isOpen={isShareModalOpen}
+				onClose={() => setIsShareModalOpen(false)}
 			/>
 
 			<SellItemModal

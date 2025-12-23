@@ -53,6 +53,11 @@ export default function RecentSales() {
 								</div>
 								<div>
 									<div className="font-medium text-white group-hover:text-primary transition-colors text-sm sm:text-base truncate max-w-[120px] sm:max-w-xs">
+										{(sale.quantitySold || 1) > 1 && (
+											<span className="text-emerald-400 font-bold mr-1">
+												{sale.quantitySold}x
+											</span>
+										)}
 										{sale.item.name ||
 											sale.item.title ||
 											'Unknown Item'}

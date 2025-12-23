@@ -11,15 +11,18 @@ export default function InventoryStats() {
 	const availableItems = items.filter((item) => item.status === 'Available');
 
 	const totalValue = availableItems.reduce(
-		(sum, item) => sum + (item.marketPrice || 0),
+		(sum, item) => sum + (item.marketPrice || 0) * (item.quantity || 1),
 		0
 	);
 	const totalInvestment = availableItems.reduce(
-		(sum, item) => sum + (item.purchasePrice || 0),
+		(sum, item) => sum + (item.purchasePrice || 0) * (item.quantity || 1),
 		0
 	);
 	const projectedProfit = totalValue - totalInvestment;
-	const totalItems = availableItems.length;
+	const totalItems = availableItems.reduce(
+		(sum, item) => sum + (item.quantity || 0),
+		0
+	);
 
 	const stats = [
 		{

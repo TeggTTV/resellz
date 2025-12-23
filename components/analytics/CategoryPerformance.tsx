@@ -17,6 +17,10 @@ export default function CategoryPerformance() {
 	const radius = 70;
 	const circumference = 2 * Math.PI * radius;
 
+	const totalItemsSold = useMemo(() => {
+		return sales.reduce((acc, sale) => acc + (sale.quantitySold || 1), 0);
+	}, [sales]);
+
 	const categories = useMemo(() => {
 		if (sales.length === 0) return [];
 
@@ -25,8 +29,9 @@ export default function CategoryPerformance() {
 
 		sales.forEach((sale) => {
 			const brand = sale.item.brand || 'Other';
-			brandCounts[brand] = (brandCounts[brand] || 0) + 1;
-			totalSales++; // Counting quantity sold, could also do revenue share
+			const qty = sale.quantitySold || 1;
+			brandCounts[brand] = (brandCounts[brand] || 0) + qty;
+			totalSales += qty;
 		});
 
 		const sortedBrands = Object.entries(brandCounts)
@@ -104,7 +109,7 @@ export default function CategoryPerformance() {
 
 						<div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
 							<span className="text-3xl font-bold text-white">
-								{sales.length}
+								{totalItemsSold}
 							</span>
 							<span className="text-xs text-gray-400">
 								Items Sold

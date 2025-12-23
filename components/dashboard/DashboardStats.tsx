@@ -12,7 +12,10 @@ export default function DashboardStats() {
 	const activeListings = items.filter(
 		(item) => item.status === 'Available'
 	).length;
-	const itemsSold = sales.length;
+	const itemsSold = sales.reduce(
+		(acc, sale) => acc + (sale.quantitySold || 1),
+		0
+	);
 
 	const totalRevenue = sales.reduce((sum, sale) => sum + sale.salePrice, 0);
 	const avgMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;

@@ -35,8 +35,9 @@ export default function RevenueChart() {
 		sales.forEach((sale) => {
 			const date = new Date(sale.dateSold);
 			if (date.getFullYear() === currentYear) {
+				const qty = sale.quantitySold || 1;
 				const monthIndex = date.getMonth();
-				monthlyData[monthIndex].revenue += sale.salePrice;
+				monthlyData[monthIndex].revenue += sale.salePrice * qty;
 				monthlyData[monthIndex].profit += sale.netProfit;
 			}
 		});
@@ -47,7 +48,10 @@ export default function RevenueChart() {
 		return monthlyData.slice(0, currentMonthIndex + 1);
 	}, [sales]);
 
-	const totalRevenue = sales.reduce((acc, curr) => acc + curr.salePrice, 0);
+	const totalRevenue = sales.reduce(
+		(acc, curr) => acc + curr.salePrice * (curr.quantitySold || 1),
+		0
+	);
 	const maxVal = Math.max(...chartData.map((d) => d.revenue), 1000); // 1000 min to avoid div by zero
 
 	return (

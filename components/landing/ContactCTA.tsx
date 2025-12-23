@@ -25,13 +25,15 @@ export default function ContactCTA() {
 					</p>
 
 					<form className="max-w-md mx-auto space-y-4 mb-8">
-						<div className="flex gap-2">
+						<div className="flex flex-col sm:flex-row gap-4 sm:gap-2">
 							<input
 								type="email"
 								placeholder="Enter your email"
-								className="flex-1 bg-black/50 border border-white/10 rounded-full px-6 py-3 text-white placeholder:text-gray-600 focus:outline-none focus:border-primary transition-colors"
+								className="w-full sm:flex-1 bg-black/50 border border-white/10 rounded-full px-6 py-3 text-white placeholder:text-gray-600 focus:outline-none focus:border-primary transition-colors"
 							/>
-							<Button>Get Started</Button>
+							<Button className="w-full sm:w-auto">
+								Get Started
+							</Button>
 						</div>
 						<p className="text-xs text-gray-500">
 							No credit card required for trial.

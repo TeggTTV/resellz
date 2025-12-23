@@ -13,6 +13,7 @@ import {
 	LogOut,
 	Menu,
 	X,
+	History,
 } from 'lucide-react';
 
 const menuItems = [
@@ -20,6 +21,7 @@ const menuItems = [
 	{ icon: Package, label: 'Inventory', href: '/dashboard/inventory' },
 	{ icon: TrendingUp, label: 'Market Research', href: '/dashboard/research' },
 	{ icon: BarChart3, label: 'Analytics', href: '/dashboard/analytics' },
+	{ icon: History, label: 'History', href: '/dashboard/history' },
 	{ icon: Settings, label: 'Settings', href: '/dashboard/settings' },
 ];
 

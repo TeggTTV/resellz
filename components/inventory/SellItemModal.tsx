@@ -22,7 +22,11 @@ export default function SellItemModal({
 	const [platformFees, setPlatformFees] = useState('');
 	const [shippingCost, setShippingCost] = useState('');
 	const [totalStock, setTotalStock] = useState('1');
-	const [soldStock, setSoldStock] = useState('0');
+	const [soldStock, setSoldStock] = useState('1'); // Default to 1 sold
+
+	// Variant Handling
+	const [selectedVariantIndex, setSelectedVariantIndex] =
+		useState<number>(-1);
 
 	// Reset form when opening for a new item
 	useEffect(() => {
@@ -30,23 +34,95 @@ export default function SellItemModal({
 			setSalePrice((item.marketPrice || '').toString());
 			setPlatformFees('0');
 			setShippingCost('0');
-			setTotalStock(
-				((item.quantity || 0) + (item.soldQuantity || 0)).toString()
-			);
-			setSoldStock((item.soldQuantity || 0).toString());
+			setSoldStock('1');
+
+			// Setup stock display
+			if (item.variants && item.variants.length > 0) {
+				// Default to first variant if exists
+				setSelectedVariantIndex(0);
+				setTotalStock(item.variants[0].quantity.toString());
+			} else {
+				setSelectedVariantIndex(-1);
+				setTotalStock(
+					((item.quantity || 0) + (item.soldQuantity || 0)).toString()
+				);
+			}
 		}
 	}, [isOpen, item]);
+
+	// Update stock and price display when variant changes
+	useEffect(() => {
+		if (
+			item &&
+			item.variants &&
+			selectedVariantIndex >= 0 &&
+			item.variants[selectedVariantIndex]
+		) {
+			const selectedVariant = item.variants[selectedVariantIndex];
+			setTotalStock(selectedVariant.quantity.toString());
+
+			// If variant has specific price, use it, otherwise fallback to item price
+			if (selectedVariant.marketPrice) {
+				setSalePrice(selectedVariant.marketPrice.toString());
+			} else {
+				setSalePrice((item.marketPrice || '').toString());
+			}
+		}
+	}, [selectedVariantIndex, item]);
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!item) return;
 
-		const total = Number(totalStock) || 1;
+		const currentTotalForSelection = Number(totalStock) || 0;
 		let sold = Number(soldStock) || 0;
-		if (sold > total) sold = total;
 
-		const newQuantity = total - sold;
-		const newStatus = newQuantity > 0 ? 'Available' : 'Sold';
+		// Validation
+		if (sold > currentTotalForSelection) sold = currentTotalForSelection;
+		if (sold <= 0) return; // Cannot sell 0
+
+		// Calculate Global New Quantity
+		const currentGlobalQuantity = item.quantity || 0;
+		const globalNewQuantity = Math.max(0, currentGlobalQuantity - sold);
+
+		// Status update
+		const newStatus = globalNewQuantity > 0 ? 'Available' : 'Sold';
+
+		// Prepare Overrides
+		const overrides: Partial<InventoryItem> = {
+			quantity: globalNewQuantity,
+			soldQuantity: (item.soldQuantity || 0) + sold,
+			status: newStatus,
+		};
+
+		let variantSoldSize: string | undefined = undefined;
+
+		// Handle Variant Logic
+		if (
+			selectedVariantIndex >= 0 &&
+			item.variants &&
+			item.variants[selectedVariantIndex]
+		) {
+			const variant = item.variants[selectedVariantIndex];
+			variantSoldSize = variant.size;
+
+			// Create deep copy of variants to update
+			const newVariants = item.variants.map((v, idx) => {
+				if (idx === selectedVariantIndex) {
+					return {
+						...v,
+						quantity: Math.max(0, v.quantity - sold),
+					};
+				}
+				return v;
+			});
+
+			// Remove variants with 0 quantity? Optionally keep them to show OOS?
+			// Let's keep them but with 0 quantity if user desires history.
+			// But traditionally we might just reduce quantity.
+
+			overrides.variants = newVariants;
+		}
 
 		sellItem(
 			item.id,
@@ -54,12 +130,9 @@ export default function SellItemModal({
 				salePrice: Number(salePrice),
 				platformFees: Number(platformFees),
 				shippingCost: Number(shippingCost),
+				variantSold: variantSoldSize,
 			},
-			{
-				quantity: newQuantity,
-				soldQuantity: sold,
-				status: newStatus,
-			}
+			overrides
 		);
 		onClose();
 	};
@@ -121,22 +194,56 @@ export default function SellItemModal({
 						{/* Form */}
 						<form onSubmit={handleSubmit} className="p-6 space-y-4">
 							<div className="space-y-4">
+								{/* Variant Selector */}
+								{item.variants && item.variants.length > 0 && (
+									<div>
+										<label className="block text-sm font-medium text-gray-400 mb-1.5">
+											Select Size to Sell
+										</label>
+										<div className="grid grid-cols-3 gap-2">
+											{item.variants.map((v, idx) => (
+												<button
+													key={idx}
+													type="button"
+													onClick={() =>
+														setSelectedVariantIndex(
+															idx
+														)
+													}
+													className={`px-3 py-2 rounded-lg text-sm font-bold border transition-all ${
+														selectedVariantIndex ===
+														idx
+															? 'bg-primary text-white border-primary'
+															: 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10'
+													}`}
+												>
+													{v.size}{' '}
+													<span className="text-[10px] font-normal opacity-60">
+														({v.quantity})
+													</span>
+												</button>
+											))}
+										</div>
+									</div>
+								)}
+
 								<div>
 									<label className="block text-sm font-medium text-gray-400 mb-1.5">
-										Stock Status (Sold / Total)
+										Quantity to Sell
 									</label>
 									<div className="flex items-center gap-2">
 										<div className="relative flex-1">
 											<input
 												required
 												type="number"
-												min="0"
+												min="1"
+												max={totalStock}
 												value={soldStock}
 												onChange={(e) =>
 													setSoldStock(e.target.value)
 												}
 												className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 text-white focus:outline-hidden focus:border-blue-500/50 transition-colors text-center font-bold"
-												placeholder="0"
+												placeholder="1"
 											/>
 											<span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none uppercase">
 												Sold
@@ -146,21 +253,11 @@ export default function SellItemModal({
 											/
 										</span>
 										<div className="relative flex-1">
-											<input
-												required
-												type="number"
-												min="1"
-												value={totalStock}
-												onChange={(e) =>
-													setTotalStock(
-														e.target.value
-													)
-												}
-												className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 text-white focus:outline-hidden focus:border-primary/50 transition-colors text-center font-bold"
-												placeholder="1"
-											/>
+											<div className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 text-gray-400 text-center font-bold cursor-not-allowed">
+												{totalStock}
+											</div>
 											<span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none uppercase">
-												Total
+												Avail
 											</span>
 										</div>
 									</div>
@@ -256,7 +353,12 @@ export default function SellItemModal({
 
 							<button
 								type="submit"
-								className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98]"
+								disabled={
+									selectedVariantIndex === -1 &&
+									item.variants &&
+									item.variants.length > 0
+								}
+								className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98]"
 							>
 								Confirm Sale
 							</button>

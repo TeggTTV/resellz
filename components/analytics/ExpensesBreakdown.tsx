@@ -13,9 +13,10 @@ export default function ExpensesBreakdown() {
 		let shipping = 0;
 
 		sales.forEach((sale) => {
-			cogs += sale.item.purchasePrice || 0;
-			fees += sale.platformFees || 0;
-			shipping += sale.shippingCost || 0;
+			const qty = sale.quantitySold || 1;
+			cogs += (sale.item.purchasePrice || 0) * qty;
+			fees += (sale.platformFees || 0) * qty;
+			shipping += (sale.shippingCost || 0) * qty;
 		});
 
 		const total = cogs + fees + shipping;

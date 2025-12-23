@@ -53,9 +53,11 @@ export default function Navbar() {
 							{link.name}
 						</Link>
 					))}
-					<Button size="sm" variant="primary">
-						Get Started
-					</Button>
+					<Link href="/dashboard">
+						<Button size="sm" variant="primary">
+							Dashboard
+						</Button>
+					</Link>
 				</div>
 
 				{/* Mobile Menu Button */}
@@ -87,9 +89,15 @@ export default function Navbar() {
 									{link.name}
 								</Link>
 							))}
-							<Button size="md" className="w-full max-w-xs">
-								Get Started
-							</Button>
+							<Link
+								href="/dashboard"
+								onClick={() => setIsMobileMenuOpen(false)}
+								className="w-full max-w-xs"
+							>
+								<Button size="md" className="w-full">
+									Dashboard
+								</Button>
+							</Link>
 						</div>
 					</motion.div>
 				)}
