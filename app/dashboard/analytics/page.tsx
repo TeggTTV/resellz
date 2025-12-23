@@ -37,10 +37,6 @@ export default function AnalyticsPage() {
 		}, 0);
 	}, [items]);
 
-	const currentMonthName = new Date().toLocaleString('default', {
-		month: 'long',
-	});
-
 	return (
 		<div className="space-y-6 pb-12">
 			<AnalyticsHeader />

@@ -44,7 +44,7 @@ export default function InventoryQuickView() {
 								</div>
 								<div>
 									<div className="font-medium text-white text-sm truncate max-w-[150px]">
-										{item.name || item.title}
+										{item.name}
 									</div>
 									<div className="text-xs text-gray-500">
 										SKU: {item.sku}

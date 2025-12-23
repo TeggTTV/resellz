@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import { X, Plus, DollarSign, Tag, Package, Save } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { InventoryItem } from '@/types/data';
@@ -44,26 +45,33 @@ export default function AddItemModal({
 	// Populate form when opening in edit mode
 	useEffect(() => {
 		if (isOpen) {
+			// biome-ignore lint/correctness/useExhaustiveDependencies: Reset form on open
 			if (itemToEdit) {
-				setFormData({
-					name: itemToEdit.name || (itemToEdit as any).title || '', // Handle legacy title/name
-					brand: itemToEdit.brand,
-					sku: itemToEdit.sku,
-					size: itemToEdit.size,
-					purchasePrice: itemToEdit.purchasePrice.toString(),
-					marketPrice: itemToEdit.marketPrice.toString(),
-					notes: itemToEdit.notes || '',
-					quantity: itemToEdit.quantity.toString(),
-				});
-				setImage(itemToEdit.imageUrl || '');
+				// Only update if editing different item
+				if (
+					formData.sku !== itemToEdit.sku ||
+					formData.name !== itemToEdit.name
+				) {
+					setFormData({
+						name: itemToEdit.name || '',
+						brand: itemToEdit.brand,
+						sku: itemToEdit.sku,
+						size: itemToEdit.size,
+						purchasePrice: itemToEdit.purchasePrice.toString(),
+						marketPrice: itemToEdit.marketPrice.toString(),
+						notes: itemToEdit.notes || '',
+						quantity: itemToEdit.quantity.toString(),
+					});
+					setImage(itemToEdit.imageUrl || '');
 
-				// Initialize variants if existing
-				if (itemToEdit.variants && itemToEdit.variants.length > 0) {
-					setVariants(itemToEdit.variants);
-					setUseVariants(true);
-				} else {
-					setVariants([]);
-					setUseVariants(false);
+					// Initialize variants if existing
+					if (itemToEdit.variants && itemToEdit.variants.length > 0) {
+						setVariants(itemToEdit.variants);
+						setUseVariants(true);
+					} else {
+						setVariants([]);
+						setUseVariants(false);
+					}
 				}
 			} else {
 				// Reset for add mode
@@ -217,9 +225,8 @@ export default function AddItemModal({
 			}
 		}
 
-		const itemData: any = {
+		const baseData = {
 			name: formData.name,
-			title: formData.name,
 			brand: formData.brand,
 			sku: formData.sku,
 			size: finalSize,
@@ -234,14 +241,12 @@ export default function AddItemModal({
 
 		if (itemToEdit) {
 			// If restocking (adding quantity), ensure status is Available
-			if (finalQuantity > 0) {
-				itemData.status = 'Available';
-			}
-			updateItem(itemToEdit.id, itemData);
+			const statusUpdate =
+				finalQuantity > 0 ? { status: 'Available' as const } : {};
+			updateItem(itemToEdit.id, { ...baseData, ...statusUpdate });
 		} else {
 			// New items always start with 0 sold
-			itemData.soldQuantity = 0;
-			addItem(itemData);
+			addItem({ ...baseData, soldQuantity: 0 });
 		}
 
 		onClose();
@@ -295,10 +300,12 @@ export default function AddItemModal({
 									>
 										{image ? (
 											<>
-												<img
+												<Image
 													src={image}
 													alt="Preview"
-													className="w-full h-full object-cover"
+													fill
+													className="object-cover"
+													unoptimized
 												/>
 												<button
 													type="button"

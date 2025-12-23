@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MoreHorizontal, Tag, Pencil, DollarSign, Trash2 } from 'lucide-react';
 import { InventoryItem } from '@/types/data';
+import { span } from 'framer-motion/client';
 
 interface InventoryCardProps {
 	item: InventoryItem;
@@ -111,7 +112,7 @@ export default function InventoryCard({
 					{item.brand}
 				</div>
 				<h3 className="font-bold text-white mb-1 truncate">
-					{item.name || item.title}
+					{item.name}
 				</h3>
 				<div className="text-xs text-gray-500 mb-4 font-mono flex items-center gap-2">
 					<span>{item.sku}</span>

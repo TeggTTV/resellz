@@ -27,7 +27,7 @@ export default function InventoryPage() {
 	// Derived State
 	const filteredItems = items.filter((item) => {
 		const matchesSearch =
-			(item.name || item.title || '')
+			(item.name || '')
 				.toLowerCase()
 				.includes(searchQuery.toLowerCase()) ||
 			item.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||

@@ -58,9 +58,7 @@ export default function RecentSales() {
 												{sale.quantitySold}x
 											</span>
 										)}
-										{sale.item.name ||
-											sale.item.title ||
-											'Unknown Item'}
+										{sale.item.name || 'Unknown Item'}
 									</div>
 									<div className="text-xs text-gray-500">
 										{formatDistanceToNow(
